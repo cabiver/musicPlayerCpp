@@ -82,5 +82,18 @@
         "url": "yoasobi/yoru ni.mp3"
       }
     ]
+  },
+  {
+    "volumen": "metal gears",
+    "songs": [
+      {
+        "name": "A Stranger I Remain.mp3",
+        "url": "metal gears rissing/A Stranger I Remain.mp3"
+      },
+      {
+        "name": "The only Thing I know for real.mp3",
+        "url": "metal gears rissing/The only Thing I know for real.mp3"
+      }
+    ]
   }
 ]

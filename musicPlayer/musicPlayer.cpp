@@ -4,6 +4,9 @@
 #include <iostream>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <direct.h>
+
+#include <sstream>
 
 
 using namespace irrklang;
@@ -11,11 +14,40 @@ using namespace irrklang;
 using json = nlohmann::json;
 using std::to_string;
 
+std::string split(std::string dir)
+{
+    std::string datos[12];
+    std::string lectura;
+    std::stringstream input_stringstream(dir);
+    int sizePath = 0;
+
+    while (getline(input_stringstream, lectura, '\\'))
+    {
+        //std::cout << "Un valor: " << lectura << std::endl;
+        datos[sizePath] = lectura;
+        sizePath++;
+    }
+    const size_t n = sizeof(datos) / sizeof(datos[0]);
+    
+    std::string arr = "";
+
+    for (int x = 0; x < (sizePath-1); x++) {
+        for (size_t j = 0; j < datos[x].length(); j++)
+        {
+            //std::cout << datos[x][j];
+            arr += datos[x][j];
+        }
+        arr += '\\';
+        //std::cout << '\\';
+    }
+    return arr;
+}
+
+
 
 
 void show_volumens(json j, int indeces) {
     system("cls");
-    //std::cout << indeces;
     for (size_t i = 0; i < j.size(); i++)
     {
         if (indeces == i) {
@@ -28,8 +60,6 @@ void show_volumens(json j, int indeces) {
 }
 void show_songs(json j, int indeces, int song) {
     system("cls");
-    //std::cout << indeces;
-
     for (size_t i = 0; i < j[indeces]["songs"].size(); i++)
     {
         if (song == i) {
@@ -44,27 +74,25 @@ void show_songs(json j, int indeces, int song) {
 int main(int argc, const char** argv)
 {
     ISoundEngine* engine = createIrrKlangDevice();
-
     if (!engine)
     {
         printf("Could not startup engine\n");
         return 0;
     }
 
-    //engine->play2D("./media/something.mp3", true);
-
-    //printf("\nHello World!\n");
-    //printf("%d ",argc);
-    //printf(argv[1]);
-
-
+    
+    const char* dirname = argv[0];
+    std::string dirString = dirname;
+    //split funtions get the path of file
+    std::string pathfuntion = split(dirString);
+    
+    //if you want to use this as env variable, need the path of the file, without it the program don´t find the json file
+    std::ifstream data_json(pathfuntion +"test.json");   
+    
+    json j = json::parse(data_json);
+    int valueChar = NULL;
+    char key = NULL;
     bool quiet_program = true;
-
-    std::ifstream datajson("test.json");
-    json j;
-    datajson >> j;
-    int valueChar;
-    char key;
 
     while (quiet_program) {
 
@@ -80,20 +108,13 @@ int main(int argc, const char** argv)
 
             if (key) {
                 valueChar = key;
-
-                //std::cout << "key: " << key << ", value: " << valueChar << std::endl;
-
                 if (valueChar == 80) {
-
-
                     if ((j.size() - 1) > index) {
                         index++;
                         show_volumens(j, index);
                     }
                 }
-                //std::cout << (valueChar == 72);
                 if (valueChar == 72) {
-
                     if (0 < index) {
                         index--;
                         show_volumens(j, index);
@@ -102,7 +123,6 @@ int main(int argc, const char** argv)
                 if (valueChar == 13) {
                     std::cout << "salio asi";
                     get_Album = false;
-                    //engine->play2D("./media/something.mp3", true);
                 }
             }
         }
@@ -111,35 +131,25 @@ int main(int argc, const char** argv)
         while (get_song)
         {
             key = _getch();
-
-
             if (key) {
                 valueChar = key;
-
-                //std::cout << "key: " << key << ", value: " << valueChar << std::endl;
-
                 if (valueChar == 80) {
-
-
                     if (j[index]["songs"].size() > index_song) {
                         index_song++;
                         show_songs(j, index, index_song);
                     }
                 }
                 if (valueChar == 72) {
-
                     if (0 < index_song) {
                         index_song--;
                         show_songs(j, index, index_song);
                     }
                 }
                 if (valueChar == 13) {
-                    //engine->drop();
                     engine->removeAllSoundSources();
                     std::cout << "salio asi" << std::endl;
-                    std::string url = "./media/";
+                    std::string url = pathfuntion + "media/";
                     url += j[index]["songs"][index_song]["url"];
-
                     const char* fol = url.c_str();
                     std::cout << fol << std::endl;
                     engine->play2D(fol, true);
@@ -149,6 +159,6 @@ int main(int argc, const char** argv)
         }
     }
 
-    //engine->drop();
+    engine->drop();
     return 0;
 }
